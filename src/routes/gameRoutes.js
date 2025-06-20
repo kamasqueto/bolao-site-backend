@@ -32,31 +32,6 @@ router.get("/", verificarToken, async (req, res) => {
   }
 });
 
-router.get("/:id/guesses", verificarToken, async (req, res) => {
-  const gameId = parseInt(req.params.id);
-  const game = await prisma.game.findUnique({ where: { id: gameId } });
-
-  if (!game) return res.status(404).json({ error: "Jogo não encontrado" });
-
-  const agora = new Date();
-  if (agora < game.date) {
-    return res.status(403).json({ error: "Palpites disponíveis apenas após o início do jogo." });
-  }
-
-  const guesses = await prisma.guess.findMany({
-    where: { gameId },
-    include: { user: { select: { name: true, email: true } } },
-  });
-
-  res.json(
-    guesses.map((g) => ({
-      user: g.user.name || g.user.email,
-      guessA: g.guessA,
-      guessB: g.guessB,
-    }))
-  );
-});
-
 router.get("/next", verificarToken, async (req, res) => {
   try {
     const agora = new Date();
@@ -103,6 +78,31 @@ router.get("/upcoming", verificarToken, async (req, res) => {
     console.error("Erro ao buscar jogos futuros:", err);
     res.status(500).json({ error: "Erro interno ao buscar jogos futuros" });
   }
+});
+
+router.get("/:id/guesses", verificarToken, async (req, res) => {
+  const gameId = parseInt(req.params.id);
+  const game = await prisma.game.findUnique({ where: { id: gameId } });
+
+  if (!game) return res.status(404).json({ error: "Jogo não encontrado" });
+
+  const agora = new Date();
+  if (agora < game.date) {
+    return res.status(403).json({ error: "Palpites disponíveis apenas após o início do jogo." });
+  }
+
+  const guesses = await prisma.guess.findMany({
+    where: { gameId },
+    include: { user: { select: { name: true, email: true } } },
+  });
+
+  res.json(
+    guesses.map((g) => ({
+      user: g.user.name || g.user.email,
+      guessA: g.guessA,
+      guessB: g.guessB,
+    }))
+  );
 });
 
 
