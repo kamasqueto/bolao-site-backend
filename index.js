@@ -15,10 +15,21 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
+const allowedOrigin = [
+  'https://bolao-site-frontend-production.up.railway.app',
+  'http://localhost:5173'
+]
+
 app.use(cors({
-  origin: 'bolao-site-frontend-production.up.railway.app', // substitua pelo seu domínio real da Vercel
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
+  origin: function (origin, callback) {
+    // Permite requests sem origin (ex: Postman) ou se estiver na lista
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true // se estiver usando cookies ou auth headers
 }));
 
 app.use(express.json());
