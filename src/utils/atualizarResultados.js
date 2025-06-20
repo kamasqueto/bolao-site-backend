@@ -10,7 +10,7 @@ async function atualizarResultados() {
     where: {
       status: "scheduled",
       date: {
-        lte: new Date(agora.getTime() - 2.5 * 60 * 60 * 1000),
+        lte: new Date(agora.getTime() - 2.5 * 60 * 60 * 1000), // passou 2h30 do início
       },
     },
   });
@@ -20,40 +20,40 @@ async function atualizarResultados() {
     return;
   }
 
-  console.log(`Verificando ${jogosPendentes.length} jogo(s) pendente(s)...`);
+  console.log(`🔍 Verificando ${jogosPendentes.length} jogo(s) pendente(s)...`);
+
+  const API_KEY = process.env.SPORTSDB_API_KEY || "123";
 
   for (const jogo of jogosPendentes) {
     try {
-      const API_KEY = process.env.SPORTSDB_API_KEY || "123";
       const url = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupevent.php?id=${jogo.externalId}`;
       const response = await axios.get(url);
-
       const event = response.data?.events?.[0];
 
       if (!event) {
-        console.log(`Evento ${jogo.externalId} não encontrado.`);
+        console.log(`❌ Evento ${jogo.externalId} não encontrado.`);
         continue;
       }
 
-      const status = event.strStatus?.toLowerCase();
       const scoreA = parseInt(event.intHomeScore);
       const scoreB = parseInt(event.intAwayScore);
 
-      if ((status === "match finished" || status === "finished") && !isNaN(scoreA) && !isNaN(scoreB)) {
+      // ⚠️ Atualiza desde que os scores estejam disponíveis
+      if (!isNaN(scoreA) && !isNaN(scoreB)) {
         await prisma.game.update({
           where: { id: jogo.id },
           data: {
             scoreA,
             scoreB,
-            status: "completed",
+            status: "completed", // força o status como concluído
           },
         });
-        console.log(`✅ Jogo atualizado: ${jogo.teamA} ${scoreA} x ${scoreB} ${jogo.teamB}`);
+        console.log(`✅ Atualizado: ${jogo.teamA} ${scoreA} x ${scoreB} ${jogo.teamB}`);
       } else {
-        console.log(`⏳ Jogo ${jogo.externalId} ainda em andamento ou sem placar.`);
+        console.log(`⏳ Sem placar disponível para ${jogo.externalId}.`);
       }
     } catch (error) {
-      console.error(`Erro ao consultar evento ${jogo.externalId}:`, error.message);
+      console.error(`❗ Erro ao consultar evento ${jogo.externalId}:`, error.message);
     }
   }
 }
