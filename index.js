@@ -16,7 +16,7 @@ const app = express();
 const prisma = new PrismaClient();
 
 app.use(cors({
-  origin: 'https://bolao-site.vercel.app', // substitua pelo seu domínio real da Vercel
+  origin: 'bolao-site-frontend-production.up.railway.app', // substitua pelo seu domínio real da Vercel
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 }));
