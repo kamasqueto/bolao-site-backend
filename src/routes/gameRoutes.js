@@ -57,4 +57,53 @@ router.get("/:id/guesses", verificarToken, async (req, res) => {
   );
 });
 
+router.get("/next", verificarToken, async (req, res) => {
+  try {
+    const agora = new Date();
+
+    const proximoJogo = await prisma.game.findFirst({
+      where: {
+        date: {
+          gte: agora, // jogos futuros
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+
+    if (!proximoJogo) {
+      return res.status(404).json({ error: "Nenhum jogo futuro encontrado" });
+    }
+
+    res.json(proximoJogo);
+  } catch (err) {
+    console.error("Erro ao buscar próximo jogo:", err);
+    res.status(500).json({ error: "Erro interno ao buscar próximo jogo" });
+  }
+});
+
+router.get("/upcoming", verificarToken, async (req, res) => {
+  try {
+    const agora = new Date();
+
+    const jogosFuturos = await prisma.game.findMany({
+      where: {
+        date: {
+          gte: agora,
+        },
+      },
+      orderBy: {
+        date: "asc",
+      },
+    });
+
+    res.json(jogosFuturos);
+  } catch (err) {
+    console.error("Erro ao buscar jogos futuros:", err);
+    res.status(500).json({ error: "Erro interno ao buscar jogos futuros" });
+  }
+});
+
+
 export default router;
