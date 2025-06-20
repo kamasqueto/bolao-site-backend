@@ -5,7 +5,7 @@ import { verificarToken } from "../middleware/authMiddleware.js";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-router.get("/next", async (req, res) => {
+router.get("/next", verificarToken,async (req, res) => {
   try {
     const agora = new Date();
 
