@@ -5,33 +5,6 @@ import { verificarToken } from "../middleware/authMiddleware.js";
 const router = express.Router();
 const prisma = new PrismaClient();
 
-// Criar um jogo manualmente (futebol, etc.)
-router.post("/", verificarToken, async (req, res) => {
-  const { teamA, teamB, date } = req.body;
-
-  try {
-    const game = await prisma.game.create({
-      data: { teamA, teamB, date: new Date(date) },
-    });
-
-    res.status(201).json(game);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao criar jogo" });
-  }
-});
-
-// Listar jogos
-router.get("/", verificarToken, async (req, res) => {
-  try {
-    const games = await prisma.game.findMany({
-      orderBy: { date: "asc" },
-    });
-    res.json(games);
-  } catch (err) {
-    res.status(500).json({ error: "Erro ao listar jogos" });
-  }
-});
-
 router.get("/next", verificarToken, async (req, res) => {
   try {
     const agora = new Date();
@@ -77,6 +50,33 @@ router.get("/upcoming", verificarToken, async (req, res) => {
   } catch (err) {
     console.error("Erro ao buscar jogos futuros:", err);
     res.status(500).json({ error: "Erro interno ao buscar jogos futuros" });
+  }
+});
+
+// Criar um jogo manualmente (futebol, etc.)
+router.post("/", verificarToken, async (req, res) => {
+  const { teamA, teamB, date } = req.body;
+
+  try {
+    const game = await prisma.game.create({
+      data: { teamA, teamB, date: new Date(date) },
+    });
+
+    res.status(201).json(game);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao criar jogo" });
+  }
+});
+
+// Listar jogos
+router.get("/", verificarToken, async (req, res) => {
+  try {
+    const games = await prisma.game.findMany({
+      orderBy: { date: "asc" },
+    });
+    res.json(games);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao listar jogos" });
   }
 });
 
