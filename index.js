@@ -15,7 +15,7 @@ dotenv.config();
 const app = express();
 const prisma = new PrismaClient();
 
-const allowedOrigin = [
+const allowedOrigins = [
   'https://bolao-site-frontend-production.up.railway.app',
   'http://localhost:5173'
 ]
