@@ -6,7 +6,6 @@ const prisma = new PrismaClient();
 async function atualizarResultados() {
   const agora = new Date();
 
-  // Buscar todos os jogos que ainda estão como agendados e iniciaram há mais de 2h30
   const jogosPendentes = await prisma.game.findMany({
     where: {
       status: "scheduled",
@@ -25,7 +24,8 @@ async function atualizarResultados() {
 
   for (const jogo of jogosPendentes) {
     try {
-      const url = `https://www.thesportsdb.com/api/v1/json/123/lookupevent.php?id=${jogo.externalId}`;
+      const API_KEY = process.env.SPORTSDB_API_KEY || "123";
+      const url = `https://www.thesportsdb.com/api/v1/json/${API_KEY}/lookupevent.php?id=${jogo.externalId}`;
       const response = await axios.get(url);
 
       const event = response.data?.events?.[0];
@@ -58,4 +58,10 @@ async function atualizarResultados() {
   }
 }
 
-atualizarResultados();
+atualizarResultados()
+  .catch((err) => {
+    console.error("Erro geral:", err);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
