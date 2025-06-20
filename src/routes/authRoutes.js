@@ -4,7 +4,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // chave secreta (use algo melhor e guarde no .env em produção)
-const JWT_SECRET = process.env.JWT_SECRET || "segredo_super_secreto";
+const JWT_SECRET = process.env.JWT_SECRET;
 
 const router = express.Router();
 const prisma = new PrismaClient();
