@@ -72,7 +72,7 @@ router.get("/all", verificarToken, async (req, res) => {
   }
 });
 
-router.get('/ranking', async (req, res) => {
+router.get('/ranking', verificarToken, async (req, res) => {
   try {
     const users = await prisma.user.findMany({
       include: {
