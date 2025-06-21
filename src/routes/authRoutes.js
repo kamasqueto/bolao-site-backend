@@ -65,5 +65,26 @@ router.post("/login", async (req, res) => {
   }
 });
 
+router.get("/me", verificarToken, async (req, res) => {
+  const userId = req.user.userId;
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+      },
+    });
+
+    if (!user) return res.status(404).json({ error: "Usuário não encontrado" });
+
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar dados do usuário" });
+  }
+});
+
+
 
 export default router;
