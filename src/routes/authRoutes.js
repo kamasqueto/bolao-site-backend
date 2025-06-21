@@ -86,6 +86,52 @@ router.get("/me", verificarToken, async (req, res) => {
   }
 });
 
+router.post('/forgot-password', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      return res.status(404).json({ message: 'Usuário não encontrado.' });
+    }
+
+    const token = jwt.sign({ userId: user.id }, process.env.JWT_SECRET, { expiresIn: '1h' });
+
+    const resetLink = `${process.env.FRONTEND_URL}/resetar-senha/${token}`;
+
+    await sendResetPasswordEmail(user.email, user.name || user.email, resetLink);
+
+    res.json({ message: 'E-mail de redefinição enviado com sucesso.' });
+  } catch (error) {
+    console.error('Erro ao enviar e-mail:', error);
+    res.status(500).json({ message: 'Erro ao enviar e-mail de redefinição.' });
+  }
+});
+
+// Resetar senha com token
+router.post('/reset-password/:token', async (req, res) => {
+  const { token } = req.params;
+  const { password } = req.body;
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: hashedPassword },
+    });
+
+    res.json({ message: 'Senha redefinida com sucesso.' });
+  } catch (err) {
+    console.error('Erro ao redefinir senha:', err);
+    res.status(400).json({ message: 'Token inválido ou expirado.' });
+  }
+});
+
 
 
 export default router;
