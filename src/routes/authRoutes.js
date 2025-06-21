@@ -2,7 +2,7 @@ import express from "express";
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
-import { verificarToken } from "../middleware/authMiddleware";
+import { verificarToken } from "../middleware/authMiddleware.js";
 
 // chave secreta (use algo melhor e guarde no .env em produção)
 const JWT_SECRET = process.env.JWT_SECRET;
