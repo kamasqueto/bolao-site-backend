@@ -72,6 +72,56 @@ router.get("/all", verificarToken, async (req, res) => {
   }
 });
 
+router.get('/ranking', async (req, res) => {
+  try {
+    const users = await prisma.user.findMany({
+      include: {
+        guesses: {
+          include: {
+            game: true,
+          },
+        },
+      },
+    });
+
+    const ranking = users.map((user) => {
+      let points = 0;
+
+      user.guesses.forEach((guess) => {
+        const game = guess.game;
+        if (game.status !== 'completed') return;
+
+        const acertouPlacar = guess.guessA === game.scoreA && guess.guessB === game.scoreB;
+        const acertouVencedor =
+          (guess.guessA > guess.guessB && game.scoreA > game.scoreB) ||
+          (guess.guessA < guess.guessB && game.scoreA < game.scoreB) ||
+          (guess.guessA === guess.guessB && game.scoreA === game.scoreB);
+
+        if (acertouPlacar) {
+          points += 5;
+        } else if (acertouVencedor) {
+          points += 3;
+        }
+      });
+
+      return {
+        id: user.id,
+        name: user.name || user.email,
+        userId: user.id,
+        points,
+      };
+    });
+
+    // Ordenar ranking por pontos decrescente
+    ranking.sort((a, b) => b.points - a.points);
+
+    res.json(ranking);
+  } catch (err) {
+    console.error('Erro ao gerar ranking:', err);
+    res.status(500).json({ error: 'Erro ao gerar ranking' });
+  }
+});
+
 router.get('/guesses/user/:id', verificarToken, async (req, res) => {
   const userId = req.params.id;
 
